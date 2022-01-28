@@ -3,12 +3,13 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using OkawariBot.Timer;
+using OkawariBot.Settings;
 
 namespace OkawariBot.Voting;
 public class VotingModule : InteractionModuleBase
 {
 	internal static Dictionary<ulong, Voting> _authorIdVotingPairs = new Dictionary<ulong, Voting>();
-
+	private SettingJson _settingJson = new SettingJson("settings.json");
 	[ComponentInteraction("okawari")]
 	public async Task Okawari()
 	{
@@ -41,6 +42,8 @@ public class VotingModule : InteractionModuleBase
 		var component = this.Context.Interaction as SocketMessageComponent;
 		ulong timerAuthorId = MentionId.Parse(component.Message.Content);
 		Voting voting = _authorIdVotingPairs[timerAuthorId];
+		OkawariTimer timer = OkawariTimerModule._authorIdTimerPairs[timerAuthorId];
+		BotSetting setting = this._settingJson.Deserialize();
 		voting.TryRemoveId(this.Context.User.Id);
 		if (isGoti)
 		{
@@ -50,6 +53,6 @@ public class VotingModule : InteractionModuleBase
 		{
 			voting.Okawaris.Add(this.Context.User.Id);
 		}
-		await voting.UpdateVotingMessage();
+		await voting.UpdateVotingEmbed(timer, setting);
 	}
 }

@@ -43,10 +43,6 @@ public class Voting
 	/// </summary>
 	public IUserMessage VotingMessage { get; set; }
 	/// <summary>
-	/// 投票者リストのメッセージ
-	/// </summary>
-	public IUserMessage VotingUsersMessage { get; set; }
-	/// <summary>
 	/// 有権者(ボイスチャンネルに参加している人)の人数をセットする
 	/// </summary>
 	/// <param name="voiceChannel">ボイスチャンネル</param>
@@ -63,22 +59,11 @@ public class Voting
 		this.VoterCount = count;
 	}
 	/// <summary>
-	/// 投票者一覧メッセージを更新する。
+	/// 投票者一覧埋め込みを更新する。
 	/// </summary>
-	public async Task UpdateVotingMessage()
+	public async Task UpdateVotingEmbed(OkawariTimer timer, BotSetting setting)
 	{
-		string gotisString = "【ごちリスト】\n";
-		string okawariString = "【おかわリスト】\n";
-		foreach(ulong userId in this.Okawaris)
-		{
-			okawariString += $"<@!{userId}>\n";
-		}
-		foreach(ulong userId in this.Gotis)
-		{
-			gotisString += $"<@!{userId}>\n"; 
-		}
-		okawariString += "と投票していない人全員\n";
-		await this.VotingUsersMessage.ModifyAsync((message) => message.Content = gotisString + okawariString);
+		await this.VotingMessage.ModifyAsync(async (message) => message.Embed = await this.GetVotingEmbed(timer, setting));
 	}
 	/// <summary>
 	/// idがおかわリスト、ごちリストにある場合は削除し、成功したかどうかを返す。
@@ -107,8 +92,8 @@ public class Voting
 	{
 		BotSetting botSetting = this._settingJson.Deserialize();
 		var builder = new ComponentBuilder()
-			.WithButton("おかわり", "okawari", emote: Emote.Parse(botSetting.okawariEmojiId))
-			.WithButton("ごち", "goti", emote: Emote.Parse(botSetting.gotiEmojiId));
+			.WithButton("おかわり", "okawari", emote: EmotePuls.Parse(botSetting.okawariEmojiId))
+			.WithButton("ごち", "goti", emote: EmotePuls.Parse(botSetting.gotiEmojiId));
 		return builder.Build();
 	}
 	/// <summary>
@@ -119,14 +104,11 @@ public class Voting
 	public async Task TimeOut(ulong timerAuthorId)
 	{
 		BotSetting botSetting = this._settingJson.Deserialize();
-		Voting voting = VotingModule._authorIdVotingPairs[timerAuthorId];
 		OkawariTimer timer = OkawariTimerModule._authorIdTimerPairs[timerAuthorId];
-		voting.Timer.Stop();
-		voting.Timer.Dispose();
-		await voting.VotingChannel.DeleteMessageAsync(voting.VotingMessage);
-		await voting.VotingChannel.DeleteMessageAsync(voting.VotingUsersMessage);
+		this.Timer.Dispose();
+		await this.VotingChannel.DeleteMessageAsync(this.VotingMessage);
 		VotingModule._authorIdVotingPairs.Remove(timerAuthorId);
-		if (voting.Gotis.Count == voting.VoterCount)
+		if (this.Gotis.Count == this.VoterCount)
 		{
 			await timer.TimerMessageChannel.SendMessageAsync("全員お腹いっぱいなのでタイマーを解除しました。");
 			OkawariTimerModule._authorIdTimerPairs.Remove(timerAuthorId);
@@ -143,8 +125,11 @@ public class Voting
 		timer.Timer = new System.Timers.Timer(extentionMilliSecond);
 		timer.StartTimer(timerAuthorId);
 		timer.TimerMessage = await timer.TimerMessageChannel.SendMessageAsync($"追加の{Time.GetTimeString(extentionMilliSecond)}タイマーを開始しました。", components: TimerComponent.Get(false));
-
 	}
+	/// <summary>
+	/// 延長時間を選べるメニューを返す。
+	/// </summary>
+	/// <returns>メニュー(メッセージコンポーネント)</returns>
 	private MessageComponent GetExtentionTimeComponent()
 	{
 		var menuBuilder = new SelectMenuBuilder()
@@ -158,5 +143,71 @@ public class Voting
 		menuBuilder.AddOption("延長しない。", "none");
 		var builder = new ComponentBuilder().WithSelectMenu(menuBuilder);
 		return builder.Build();
+	}
+	/// <summary>
+	/// 投票用の埋め込みを作成し、返す。
+	/// </summary>
+	/// <param name="timer">時間が切れたタイマー</param>
+	/// <param name="botSetting">botの設定</param>
+	/// <returns>投票用の埋め込み</returns>
+	public async Task<Embed> GetVotingEmbed(OkawariTimer timer, BotSetting botSetting)
+	{
+		string mentionMessage = await timer.GetVoiceChannelUsersMentionMessage();
+		var builder = new EmbedBuilder()
+		{
+			Title = "タイマーが終了しました",
+			Description = $"【投票できる人】\n{mentionMessage}\n\n",
+			Color = Color.Red
+		};
+		builder.AddField(new EmbedFieldBuilder()
+		{
+			Name = $"【{EmotePuls.Parse(botSetting.okawariEmojiId)}に投票した人】",
+			Value = this.GetOkawariString()
+		});
+		builder.AddField(new EmbedFieldBuilder()
+		{
+			Name = $"【{EmotePuls.Parse(botSetting.gotiEmojiId)}に投票した人】",
+			Value = this.GetGotiString()
+		});
+		builder.Description +=
+			$"{EmotePuls.Parse(botSetting.okawariEmojiId)} or {EmotePuls.Parse(botSetting.gotiEmojiId)}\n\n" +
+			$"{Time.GetTimeString(botSetting.VotingTimeLimitSecond * 1000)}以内に投票してください。";
+		return builder.Build();
+	}
+	/// <summary>
+	/// ごち勢を列挙した文字列を返す。
+	/// </summary>
+	/// <returns>ゴチ勢を列挙した文字列</returns>
+	private string GetGotiString()
+	{
+		string gotiString = this.GetUsersMentionString(this.Gotis);
+		if (string.IsNullOrEmpty(gotiString))
+		{
+			gotiString = "まだ誰もごちそうさましていません。";
+		}
+		return gotiString;
+	}
+	/// <summary>
+	/// おかわり勢を列挙した文字列を返す。
+	/// </summary>
+	/// <returns>おかわり勢を列挙した文字列</returns>
+	private string GetOkawariString()
+	{
+		string okawariString = this.GetUsersMentionString(this.Okawaris);
+		return okawariString += "・投票していない人全員\n";
+	}
+	/// <summary>
+	/// ユーザIdのリスト内の人を全てメンションしたメッセージを返す。
+	/// </summary>
+	/// <param name="userIds">ユーザIdのあるリスト</param>
+	/// <returns>ユーザIdのリスト内の人を全てメンションしたメッセージ</returns>
+	private string GetUsersMentionString(IReadOnlyList<ulong> userIds)
+	{
+		string result = "";
+		foreach (ulong userId in userIds)
+		{
+			result += $"・<@!{userId}>\n";
+		}
+		return result;
 	}
 }

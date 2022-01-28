@@ -4,7 +4,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using OkawariBot.Settings;
 
-namespace OkawariBot.Timer;
+namespace OkawariBot.Settings;
 [Group("setting", "設定コマンド")]
 public class SettingModule : InteractionModuleBase
 {
@@ -12,11 +12,12 @@ public class SettingModule : InteractionModuleBase
 	[SlashCommand("emoji", "おかわりorごち絵文字を設定します。")]
 	public async Task SetEmoji([Choice("おかわり", "okawari"),Choice("ごち", "goti")]string okawariOrGoti, string emojiId)
 	{
-		if (!Emote.TryParse(emojiId, out Emote emote))
+		if (!EmotePuls.TryParse(emojiId, out IEmote emote))
 		{
 			await this.RespondAsync("これは絵文字ではありません。", ephemeral: true);
 			return;
 		}
+
 		BotSetting botSetting = this.settingJson.Deserialize();
 		if (okawariOrGoti == "okawari")
 		{

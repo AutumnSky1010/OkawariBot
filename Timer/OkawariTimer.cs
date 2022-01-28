@@ -31,6 +31,10 @@ public class OkawariTimer
 		this.TimerMessage = timerMessage;
 	}
 	/// <summary>
+	/// タイマーの停止時間
+	/// </summary>
+	private int TimeOutMillisecond { get; }
+	/// <summary>
 	/// タイマーを開始した人
 	/// </summary>
 	public SocketGuildUser Author { get; set; }
@@ -58,7 +62,7 @@ public class OkawariTimer
 	/// 参加者全員をメンションしたメッセージの文字列を返す
 	/// </summary>
 	/// <returns>タイマー開始した人が参加しているボイスチャンネルに参加している人を全員メンションしたメッセージの文字列</returns>
-	private async Task<string> GetVoiceChannelUsersMentionMessage()
+	public async Task<string> GetVoiceChannelUsersMentionMessage()
 	{
 		string mentionMessage = "";
 		List<ulong> ids = await this.GetVoiceChannelUserIds();
@@ -68,6 +72,10 @@ public class OkawariTimer
 		}
 		return mentionMessage;
 	}
+	/// <summary>
+	/// ボイスチャンネルに参加しているユーザのIdのリストを取得する。
+	/// </summary>
+	/// <returns>ボイスチャンネルに参加しているユーザのIdのリスト</returns>
 	public async Task<List<ulong>> GetVoiceChannelUserIds()
 	{
 		var userList = new List<ulong>();
@@ -87,21 +95,22 @@ public class OkawariTimer
 	/// <param name="authorId">タイマーを開始した人のId</param>
 	public async Task OnTimeOut(ulong authorId)
 	{
-		OkawariTimer timer = OkawariTimerModule._authorIdTimerPairs[authorId];
 		BotSetting botSetting = this._settingJson.Deserialize();
-		timer.Timer.Stop();
-		timer.Timer.Dispose();
-		await timer.TimerMessageChannel.DeleteMessageAsync(timer.TimerMessage);
-		string mentionMessage = await timer.GetVoiceChannelUsersMentionMessage();
-		await timer.TimerMessageChannel.SendMessageAsync(botSetting.TimeOutMessage, isTTS: true);
+		this.Timer.Dispose();
+		await this.TimerMessageChannel.DeleteMessageAsync(this.TimerMessage);
 		Voting.Voting voting = await this.CreateVoting(authorId);
-		voting.VotingMessage = await timer.TimerMessageChannel.SendMessageAsync(
-			$"<@!{timer.Author.Id}>タイマーが終了しました。\n\n" +
-			$"【投票できる人】\n{mentionMessage}\n\n " +
-			$"{Emote.Parse(botSetting.okawariEmojiId)} or {Emote.Parse(botSetting.gotiEmojiId)}\n\n" +
-			$"{Time.GetTimeString(botSetting.VotingTimeLimitSecond * 1000)}以内に投票してください。", components: voting.GetVotingComponent());
-		voting.VotingUsersMessage = await timer.TimerMessageChannel.SendMessageAsync($"投票者一覧になる予定のメッセージ");
-		
+		await this.SendTimeOutMessage(voting, botSetting);
+	}
+	/// <summary>
+	/// 時間切れ時にメッセージを送信する。
+	/// </summary>
+	private async Task SendTimeOutMessage(Voting.Voting voting, BotSetting botSetting)
+	{
+		await this.TimerMessageChannel.SendMessageAsync(botSetting.TimeOutMessage, isTTS: true);
+		voting.VotingMessage = await this.TimerMessageChannel.SendMessageAsync
+			($"<@!{this.Author.Id}>", 
+			embed:await voting.GetVotingEmbed(this, botSetting), 
+			components: voting.GetVotingComponent());
 	}
 	/// <summary>
 	/// 投票を作成する
