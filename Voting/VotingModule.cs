@@ -29,7 +29,7 @@ public class VotingModule : InteractionModuleBase
 		var component = this.Context.Interaction as SocketMessageComponent;
 		ulong timerAuthorId = MentionId.Parse(component.Message.Content);
 		OkawariTimer timer = OkawariTimerModule._authorIdTimerPairs[timerAuthorId];
-		List<ulong> userIds = await timer.GetVoiceChannelUserIds();
+		List<ulong> userIds = await timer.MeetingChannel.GetVoiceChannelUserIds();
 		if (userIds.Contains(this.Context.User.Id))
 		{
 			return true;

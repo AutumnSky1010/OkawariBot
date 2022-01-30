@@ -43,4 +43,9 @@ public class BotSetting
 	/// </summary>
 	[JsonPropertyName("automaticExtensionSecond")]
 	public int AutomaticExtensionSecond { get; set; } = 180;
+	/// <summary>
+	/// 通知をする時間
+	/// </summary>
+	[JsonPropertyName("notificationTimes")]
+	public List<int> NotificationTimes { get; set; } = new List<int>();
 }

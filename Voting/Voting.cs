@@ -17,11 +17,11 @@ public class Voting
 	/// <summary>
 	/// 設定情報の入っているjsonファイル
 	/// </summary>
-	private SettingJson _settingJson = new SettingJson("settings.json");
+	private SettingJson _settingJson { get; set; } = new SettingJson("settings.json");
 	/// <summary>
 	/// 投票可能時間計測用タイマー
 	/// </summary>
-	public System.Timers.Timer Timer { get; set; }
+	public System.Timers.Timer Timer { get; set; } = new System.Timers.Timer();
 	/// <summary>
 	/// おかわリスト(投票者のId)
 	/// </summary>
@@ -110,21 +110,21 @@ public class Voting
 		VotingModule._authorIdVotingPairs.Remove(timerAuthorId);
 		if (this.Gotis.Count == this.VoterCount)
 		{
-			await timer.TimerMessageChannel.SendMessageAsync("全員お腹いっぱいなのでタイマーを解除しました。");
+			await timer.MeetingChannel.MessageChannel.SendMessageAsync("全員お腹いっぱいなのでタイマーを解除しました。");
 			OkawariTimerModule._authorIdTimerPairs.Remove(timerAuthorId);
 			return;
 		}
 
 		if (!botSetting.IsAutomaticExtension)
 		{
-			timer.ExtentionTimerMessage = await timer.TimerMessageChannel.SendMessageAsync(
+			timer.ExtentionTimerMessage = await timer.MeetingChannel.MessageChannel.SendMessageAsync(
 				$"<@!{timerAuthorId}>何分延長するかを選んでください。", components: this.GetExtentionTimeComponent());
 			return;
 		}
 		int extentionMilliSecond = botSetting.AutomaticExtensionSecond * 1000;
-		timer.Timer = new System.Timers.Timer(extentionMilliSecond);
-		timer.StartTimer(timerAuthorId);
-		timer.TimerMessage = await timer.TimerMessageChannel.SendMessageAsync($"追加の{Time.GetTimeString(extentionMilliSecond)}タイマーを開始しました。", components: TimerComponent.Get(false));
+		timer.Timer = new System.Timers.Timer(1000);
+		timer.StartTimer(timerAuthorId, extentionMilliSecond);
+		timer.TimerMessage = await timer.MeetingChannel.MessageChannel.SendMessageAsync($"追加の{Time.GetTimeString(extentionMilliSecond)}タイマーを開始しました。", components: TimerComponent.Get(false));
 	}
 	/// <summary>
 	/// 延長時間を選べるメニューを返す。
@@ -152,7 +152,7 @@ public class Voting
 	/// <returns>投票用の埋め込み</returns>
 	public async Task<Embed> GetVotingEmbed(OkawariTimer timer, BotSetting botSetting)
 	{
-		string mentionMessage = await timer.GetVoiceChannelUsersMentionMessage();
+		string mentionMessage = await timer.MeetingChannel.GetVoiceChannelUsersMentionMessage();
 		var builder = new EmbedBuilder()
 		{
 			Title = "タイマーが終了しました",
@@ -162,12 +162,14 @@ public class Voting
 		builder.AddField(new EmbedFieldBuilder()
 		{
 			Name = $"【{EmotePuls.Parse(botSetting.okawariEmojiId)}に投票した人】",
-			Value = this.GetOkawariString()
+			Value = this.GetOkawariString(),
+			IsInline = true
 		});
 		builder.AddField(new EmbedFieldBuilder()
 		{
 			Name = $"【{EmotePuls.Parse(botSetting.gotiEmojiId)}に投票した人】",
-			Value = this.GetGotiString()
+			Value = this.GetGotiString(),
+			IsInline = true
 		});
 		builder.Description +=
 			$"{EmotePuls.Parse(botSetting.okawariEmojiId)} or {EmotePuls.Parse(botSetting.gotiEmojiId)}\n\n" +
