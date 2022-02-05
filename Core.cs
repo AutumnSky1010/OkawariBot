@@ -32,7 +32,7 @@ class Core
 		this._client.Ready += RegisterCommands;
 		await this._client.LoginAsync(TokenType.Bot, this._settingJson.Deserialize().Token);
 		await this._client.StartAsync();
-		await LoadCommandsAsync();
+		await this.LoadCommandsAsync();
 		await Task.Delay(-1);
 	}
 	private async Task RegisterCommands()
@@ -55,3 +55,32 @@ class Core
 		await this._logger.ShowMessageLogAsync(commandContext);
 	}
 }
+///-----------------------------ライセンス---------------------------------------------------------------------------------------------------------------------------------------------------
+/// 
+/// 【MITライセンスの使用ライブラリ】
+/// [ライブラリ名：著作者]
+/// ・Microsoft.Extensions.DependencyInjection　　　　　　　：Microsoft
+/// ・Microsoft.Extensions.DependencyInjection.Abstractions：Microsoft
+/// ・Newtonsoft.Json　　　　　　　　　　　　　　　　　　　　　：James Newton-King
+/// ・System.Interactive.Async　　　　　　　　　　　　　　　　：.NET Foundation and Contributors
+/// ・System.Linq.Async　　　　　　　　　　　　　　　　　　　　：.NET Foundation and Contributors
+/// ・System.Reactive										：.NET Foundation and Contributors
+/// ・Discord.Net.WebSocket　　　　　　　　　　　　　　　　　　：Discord.Net Contributors
+/// ・Discord.Net.Webhook　　　　　　　　　　　　　　　　　　　：Discord.Net Contributors
+/// ・Discord.Net.Rest　　　　　　　　　　　　　　　　　　　　 ：Discord.Net Contributors
+/// ・Discord.Net.Interactions　　　　　　　　　　　　　　　　：Discord.Net Contributors
+/// ・Discord.Net.Core　　　　　　　　　　　　　　　　　　　　 ：Discord.Net Contributors
+/// ・Discord.Net.Commands　　　　　　　　　　　　　　　　　　 ：Discord.Net Contributors
+/// 
+/// 【MITライセンス】
+///Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without 
+///restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of 
+///the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+///
+///The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+///
+///THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+///MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+///LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+///OTHER DEALINGS IN THE SOFTWARE.
+///-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
