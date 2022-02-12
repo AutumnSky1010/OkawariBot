@@ -92,8 +92,8 @@ public class Voting
 	{
 		BotSetting botSetting = this._settingJson.Deserialize();
 		var builder = new ComponentBuilder()
-			.WithButton("おかわり", "okawari", emote: EmotePuls.Parse(botSetting.okawariEmojiId))
-			.WithButton("ごち", "goti", emote: EmotePuls.Parse(botSetting.gotiEmojiId));
+			.WithButton("おかわり", "okawari", emote: EmotePuls.Parse(botSetting.okawariEmojiId), style:ButtonStyle.Secondary)
+			.WithButton("ごち", "goti", emote: EmotePuls.Parse(botSetting.gotiEmojiId), style: ButtonStyle.Secondary);
 		return builder.Build();
 	}
 	/// <summary>
