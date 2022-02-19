@@ -14,7 +14,7 @@ public class SettingModule : InteractionModuleBase
 		[Summary(description: "変更する絵文字を選択。")][Choice("おかわり", "okawari"),Choice("ごち", "goti")]string okawariOrGoti,
 		[Summary(description: "絵文字、カスタム絵文字のID")] string emojiId)
 	{
-		if (!EmotePuls.TryParse(emojiId, out IEmote emote))
+		if (!EmoteParser.TryParse(emojiId, out IEmote emote))
 		{
 			await this.RespondAsync("これは絵文字ではありません。", ephemeral: true);
 			return;
@@ -39,6 +39,11 @@ public class SettingModule : InteractionModuleBase
 		[Summary(description: "投票の待ち時間(分と秒を同時に指定可能)")] int second = 0)
 	{
 		second = minute * 60 + second;
+		if (second <= 0)
+		{
+			await this.RespondAsync("投票の待ち時間は1秒以上で指定してください。", ephemeral: true);
+			return;
+		}
 		BotSetting botSetting = this._settingJson.Deserialize();
 		botSetting.VotingTimeLimitSecond = second;
 		this._settingJson.Serialize(botSetting);
@@ -50,6 +55,11 @@ public class SettingModule : InteractionModuleBase
 		[Summary(description: "自動延長時間(分と秒を同時に指定可能)")] int second = 0)
 	{
 		second = minute * 60 + second;
+		if (second <= 0)
+		{
+			await this.RespondAsync("自動延長の時間は1秒以上で指定してください。", ephemeral: true);
+			return;
+		}
 		BotSetting botSetting = this._settingJson.Deserialize();
 		botSetting.AutomaticExtensionSecond = second;
 		this._settingJson.Serialize(botSetting);
@@ -90,8 +100,8 @@ public class SettingModule : InteractionModuleBase
 		string description =
 			$"タイマー停止時のＴＴＳメッセージ：{botSetting.TimeOutMessage}\n\n" +
 			$"投票の待ち時間　　　　　　　　　：{Time.GetTimeString(botSetting.VotingTimeLimitSecond * 1000)}\n\n" +
-			$"おかわり絵文字　　　　　　　　　：{EmotePuls.Parse(botSetting.okawariEmojiId)}\n\n" +
-			$"ごち絵文字　　　　　　　　　　　：{EmotePuls.Parse(botSetting.gotiEmojiId)}\n\n" +
+			$"おかわり絵文字　　　　　　　　　：{EmoteParser.Parse(botSetting.okawariEmojiId)}\n\n" +
+			$"ごち絵文字　　　　　　　　　　　：{EmoteParser.Parse(botSetting.gotiEmojiId)}\n\n" +
 			$"自動延長をするか　　　　　　　　：{isAutomaticExtention}\n\n" +
 			$"自動延長した時の延長時間　　　　：{Time.GetTimeString(botSetting.AutomaticExtensionSecond * 1000)}\n\n" +
 			$"残り時間を通知する時間　　　　　：{notificationTimes}";

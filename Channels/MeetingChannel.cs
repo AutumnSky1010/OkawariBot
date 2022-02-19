@@ -1,11 +1,17 @@
-﻿using System;
+﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using OkawariBot.Settings;
 
 namespace OkawariBot.Channels
 {
 	public class MeetingChannel
 	{
+		public MeetingChannel(IVoiceChannel voiceChannel, IMessageChannel messageChannel)
+		{
+			this.MessageChannel = messageChannel;
+			this.VoiceChannel = voiceChannel;
+		}
 		/// <summary>
 		/// 勉強会中のボイスチャンネル
 		/// </summary>
@@ -18,6 +24,7 @@ namespace OkawariBot.Channels
 		/// インフォメーションのメッセージ
 		/// </summary>
 		public IUserMessage? InformationMessage { get; set; }
+		public MeetingState State { get; set; } = new MeetingState(MeetingState.MeetingStateType.StartedByAuthor);
 		/// <summary>
 		/// 現在
 		/// </summary>
@@ -51,6 +58,23 @@ namespace OkawariBot.Channels
 			}
 			this._nowJoinerCount = joinerCount;
 		}
+		public async Task TrySetTopic(string topic)
+		{
+			BotSetting setting = new SettingJson("settings.json").Deserialize();
+			if (!topic.Contains($@"https://discord.com/channels/{setting.GuildId}/{this.MessageChannel.Id}"))
+			{
+				this.CurrentTopic = topic;
+				return;
+			}
+			string[] splitUrl = topic.Split("/");
+			ulong messageId;
+			if (!ulong.TryParse(splitUrl[splitUrl.Length - 1], out messageId))
+			{
+				this.CurrentTopic = topic;
+				return;
+			}
+			this.CurrentTopic = (await this.MessageChannel.GetMessageAsync(messageId))?.Content ?? topic;
+		}
 		/// <summary>
 		/// 進行に関する情報を送信する
 		/// </summary>
@@ -79,13 +103,18 @@ namespace OkawariBot.Channels
 			var builder = new EmbedBuilder()
 			{
 				Title = "インフォメーション",
-				Description = $"現在の進行に関する情報です。",
+				Description = $"現在の進行に関する情報です。\n",
 				Color = Color.LightOrange,
 			};
 			builder.AddField(new EmbedFieldBuilder()
 			{
 				Name = "【トピック】",
 				Value = $"{this.CurrentTopic}\n",
+			});
+			builder.AddField(new EmbedFieldBuilder()
+			{
+				Name = "【状態】",
+				Value = $"{this.State.GetString()}"
 			});
 			return builder;
 		}

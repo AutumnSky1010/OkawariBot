@@ -1,6 +1,6 @@
 ﻿
 namespace OkawariBot;
-internal static class MentionId
+internal static class Mention
 {
 	/// <summary>
 	/// メッセージの一番最初にメンションしているメッセージからメンション先のユーザのIDを取得する。

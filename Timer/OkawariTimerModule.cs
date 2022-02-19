@@ -3,8 +3,8 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
 
-using OkawariBot.Settings;
 using OkawariBot.Channels;
+using OkawariBot.Settings;
 
 namespace OkawariBot.Timer;
 public class OkawariTimerModule : InteractionModuleBase
@@ -16,6 +16,11 @@ public class OkawariTimerModule : InteractionModuleBase
 		[Summary(description: "タイマーが鳴るまでの分数(分と秒を同時に指定可能)")] int minute = 0,
 		[Summary(description: "タイマーが鳴るまでの秒数(分と秒を同時に指定可能)")] int second = 0)
 	{
+		if (second + minute * 60 <= 0)
+		{
+			await this.RespondAsync("タイマーの時間は1秒以上に設定してください。", ephemeral: true);
+			return;
+		}
 		// タイマーの作者
 		var author = this.Context.User as SocketGuildUser;
 		// タイマーの作者がボイスチャンネルに参加していない場合
@@ -26,7 +31,8 @@ public class OkawariTimerModule : InteractionModuleBase
 		IUserMessage timerMessage = await this.ReplyAsync(
 			$"{Time.GetTimeString((second + minute * 60)*1000)}のタイマーを開始します。", 
 			components:TimerComponent.Get(false));
-		var timer = new OkawariTimer(author, this.Context.Channel, timerMessage, topic);
+		var timer = new OkawariTimer(author, this.Context.Channel, timerMessage);
+		await timer.MeetingChannel.TrySetTopic(topic);
 		timer.StartTimer(this.Context.User.Id, (second + minute * 60) * 1000);
 		this.AddAuthorIdTimerPairs(timer);
 		await this.RespondAsync("ボタンでタイマーを操作できます。");
@@ -92,7 +98,7 @@ public class OkawariTimerModule : InteractionModuleBase
 	public async Task OnSelectExtentionTimeMenu(string[] selectedMenu)
 	{
 		var component = this.Context.Interaction as SocketMessageComponent;
-		ulong timerAuthorId = MentionId.Parse(component.Message.Content);
+		ulong timerAuthorId = Mention.Parse(component.Message.Content);
 		if (this.Context.User.Id != timerAuthorId)
 		{
 			await this.RespondAsync("タイマーの作成者のみ延長できます。", ephemeral:true);
@@ -106,9 +112,7 @@ public class OkawariTimerModule : InteractionModuleBase
 			_authorIdTimerPairs.Remove(timerAuthorId);
 			return;
 		}
-		timer.Timer = new System.Timers.Timer(1000);
-		timer.StartTimer(timerAuthorId, int.Parse(selectedMenu[0]) * 60 * 1000);
-		timer.TimerMessage = await timer.MeetingChannel.MessageChannel.SendMessageAsync($"追加の{selectedMenu[0]}分タイマーを開始しました。", components: TimerComponent.Get(false));
+		await timer.Extend(int.Parse(selectedMenu[0]) * 60 * 1000, timerAuthorId, MeetingState.MeetingStateType.ExtendedByAuthor);
 		await this.RespondAsync();
 	}
 	private async Task<bool> IsJoinedVoiceChannel(SocketGuildUser author)

@@ -2,7 +2,7 @@
 using Discord;
 
 namespace OkawariBot;
-internal class EmotePuls
+public static class EmoteParser
 {
 	/// <summary>
 	/// エモート(カスタム絵文字)ないし絵文字を表すIdの場合、そのエモートないし絵文字を返す。

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="OkawariBot.Settings.BotSetting">
-    <Position X="10" Y="1" Width="2.5" />
+  <Class Name="OkawariBot.Settings.BotSetting" Collapsed="true">
+    <Position X="6.5" Y="6.25" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAEAAgQAAAAAAAAABAAAAAAAAIAAAAARAAQ=</HashCode>
+      <HashCode>AAAAAAAAAAEAAgQAAAAAAAAABAAAAAAAAIAAAACRAAQ=</HashCode>
       <FileName>BotSettings\BotSetting.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -17,14 +17,14 @@
   <Class Name="OkawariBot.Timer.OkawariTimer">
     <Position X="5.75" Y="1" Width="3" />
     <TypeIdentifier>
-      <HashCode>BAAAAAABAAAAKgAAhAAACAgAAAAAAwAAAAAAAgAEACA=</HashCode>
+      <HashCode>hAAAAAAAAAAADIAAhAAACAAAAAAAAQAAAAABAgAEACA=</HashCode>
       <FileName>Timer\OkawariTimer.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OkawariBot.Timer.OkawariTimerModule">
     <Position X="3.25" Y="1" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAACAQAAAAKAAAACAAAAAAAACAAAEEAAAAABAA=</HashCode>
+      <HashCode>AAAAAAAACAQAAAAKAAAACAAAAAAAACAAAEEAAAAABAI=</HashCode>
       <FileName>Timer\OkawariTimerModule.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -36,16 +36,16 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OkawariBot.Voting.Voting">
-    <Position X="10" Y="4.75" Width="1.5" />
+    <Position X="9" Y="1" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAEAAAAQAgCAEIAAAAgCEAAAAAAAAAAIQAATAAEAAE=</HashCode>
+      <HashCode>AAAEAAAAQAgCAEAAAAAgCEAAAAAAAAAAIQAQTAAEAAk=</HashCode>
       <FileName>Voting\Voting.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OkawariBot.Voting.VotingModule">
     <Position X="11.75" Y="4.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAACAAQAAAAgAAAAAAAgAABACA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAACAAQAAAAgAAAAAAAgAABACg=</HashCode>
       <FileName>Voting\VotingModule.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -56,11 +56,11 @@
       <FileName>Core.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OkawariBot.EmotePuls">
+  <Class Name="OkawariBot.EmoteParser">
     <Position X="2.75" Y="6" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>EmotePuls.cs</FileName>
+      <FileName>EmoteParser.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OkawariBot.Logger">
@@ -70,11 +70,11 @@
       <FileName>Logger.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OkawariBot.MentionId">
+  <Class Name="OkawariBot.Mention">
     <Position X="2.75" Y="7.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>MentionId.cs</FileName>
+      <FileName>Mention.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OkawariBot.Time">
@@ -87,8 +87,22 @@
   <Class Name="OkawariBot.Settings.SettingModule">
     <Position X="16" Y="1" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AQEAAAAAAAAAAAAAAiAAAQAAAACAAAAAAAAgAAAAAAA=</HashCode>
+      <HashCode>AQEBAAAAAAAAAAAAAiAACQAAABCAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>BotSettings\SettingModule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OkawariBot.Settings.CSVSecond">
+    <Position X="2.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>BotSettings\CSVSecond.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OkawariBot.Channels.MeetingChannel">
+    <Position X="18.75" Y="1" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>ACAIAAARACBACwAAAACAkAAAAAAAAAAAIAAAAAABAAA=</HashCode>
+      <FileName>Channels\MeetingChannel.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Yu Gothic UI" Size="9" />

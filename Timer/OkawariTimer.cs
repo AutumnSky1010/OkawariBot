@@ -20,14 +20,12 @@ public class OkawariTimer
 	/// <param name="timerMessageChannel">タイマーを開始したテキストチャンネル</param>
 	/// <param name="minute">分</param>
 	/// <param name="second">秒</param>
-	public OkawariTimer(SocketGuildUser author, IMessageChannel timerMessageChannel, IUserMessage timerMessage, string topic)
+	public OkawariTimer(SocketGuildUser author, IMessageChannel timerMessageChannel, IUserMessage timerMessage)
 	{
 		var timer = new System.Timers.Timer(1000);
 		this.Timer = timer;
 		this.Author = author;
-		this.MeetingChannel.VoiceChannel = author.VoiceChannel;
-		this.MeetingChannel.MessageChannel = timerMessageChannel;
-		this.MeetingChannel.CurrentTopic = topic;
+		this.MeetingChannel = new MeetingChannel(author.VoiceChannel, timerMessageChannel);
 		this.TimerMessage = timerMessage;
 	}
 	/// <summary>
@@ -49,7 +47,7 @@ public class OkawariTimer
 	/// <summary>
 	/// タイマーを開始した人が参加しているボイスチャンネル
 	/// </summary>
-	public MeetingChannel MeetingChannel { get; set; } = new MeetingChannel();
+	public MeetingChannel MeetingChannel { get; set; }
 	/// <summary>
 	/// タイマーのメッセージ
 	/// </summary>
@@ -71,7 +69,6 @@ public class OkawariTimer
 		BotSetting botSetting = this._settingJson.Deserialize();
 		this.MeetingChannel.Stop();
 		this.Timer.Dispose();
-		await this.MeetingChannel.TryDeleteInfoMessage();
 		await this.MeetingChannel.MessageChannel.DeleteMessageAsync(this.TimerMessage);
 		Voting.Voting voting = await this.CreateVoting(authorId);
 		await this.SendTimeOutMessage(voting, botSetting);
@@ -94,12 +91,17 @@ public class OkawariTimer
 	/// <returns></returns>
 	private async Task<Voting.Voting> CreateVoting(ulong timerAuthorId)
 	{
-		var voting = new Voting.Voting(this._settingJson.Deserialize().VotingTimeLimitSecond);
+		int votingTimeLimitSecond = this._settingJson.Deserialize().VotingTimeLimitSecond;
+		if (votingTimeLimitSecond <= 0)
+		{
+			votingTimeLimitSecond = 1;
+		}
+		var voting = new Voting.Voting(votingTimeLimitSecond);
 		voting.VotingChannel = OkawariTimerModule._authorIdTimerPairs[timerAuthorId].MeetingChannel.MessageChannel;
 		await voting.SetVoterCount(OkawariTimerModule._authorIdTimerPairs[timerAuthorId].MeetingChannel.VoiceChannel);
-		voting.Timer.Elapsed += async (sender, args) => await voting.TimeOut(timerAuthorId);
-		voting.Timer.Start();
+		voting.Timer.Elapsed += async (sender, args) => await voting.Finish(timerAuthorId);
 		VotingModule._authorIdVotingPairs.Add(timerAuthorId, voting);
+		voting.Timer.Start();
 		return VotingModule._authorIdVotingPairs[timerAuthorId];
 	}
 	/// <summary>
@@ -114,8 +116,18 @@ public class OkawariTimer
 		this.Timer.Elapsed += async (sender, e) => await this.Elapsed(authorId);
 		this.Timer.Start();
 		await this.MeetingChannel.SendInformation();
+		if (timeOutMillisecond == 0)
+		{
+			await this.OnTimeOut(authorId);
+		}
 	}
-
+	public async Task Extend(int extentionMilliSecond, ulong authorId, MeetingState.MeetingStateType state)
+	{
+		this.Timer = new System.Timers.Timer(1000);
+		this.StartTimer(authorId, extentionMilliSecond);
+		this.MeetingChannel.State.State = state;
+		this.TimerMessage = await this.MeetingChannel.MessageChannel.SendMessageAsync($"追加の{Time.GetTimeString(extentionMilliSecond)}タイマーを開始しました。", components: TimerComponent.Get(false));
+	}
 	private async Task Elapsed(ulong authorId)
 	{
 		this._elapseMillisecond += 1000;
