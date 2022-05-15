@@ -95,6 +95,15 @@ setting emoji okawari-or-goti:[おかわり]or[ごち] emoji-id:絵文字のId
 ※検索すれば沢山情報がありますので、botの招待方法、トークンの取得方法などは省略させていただきます。
 
 ------------------------------------------
+【botの起動方法】
+
+1. OkawariBotをビルド
+2. 実行ファイルと同じパスに settings.json を作成
+    - 例) bin/Debug/net6.0/settings.json を作成
+    - settings.json に設定する内容は、settings.example.jsonの内容を参照してください
+3. 実行ファイルからbotを起動
+    - "Gateway Connected" が出力されれば成功
+------------------------------------------
 
 【更新情報-OkawariBot-】
 Ver 1.0.0 — 2022/01/23
